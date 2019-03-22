@@ -36,21 +36,33 @@ class TreeFrame(ttk.Frame):
 
 
     def addItem(self):
-        self.grid_remove()
-        inputframe=InputDataFrame()
-        inputframe.grid()
+        self.button_add.configure(state=DISABLED)
+        self.inputframe=InputDataFrame(*self.treetitle)
+        self.inputframe.grid()
+        self.button_add.configure(state=NORMAL)
+
         # self.tree.insert('','end',text="test")
 
 class InputDataFrame(Tk):
-    def __init__(self):
+    def __init__(self,*datatitle):
         Tk.__init__(self)
+        self.title("Input Data:")
         self.frame=ttk.Frame(self)
         self.frame.grid()
-        self.createWidgets()
+        self.createWidgets(*list(datatitle))
         #self.mainloop()
 
-    def createWidgets(self):
-        self.quitButton=ttk.Button(self.frame, text="Quit",command=self.quit)
+    def createWidgets(self,*datatitle):
+        self.entrylist=[]
+        currentrow=0
+        for i in datatitle:
+            a=ttk.Label(self.frame,text=i)
+            b=ttk.Entry(self.frame)
+            self.entrylist.append(a)
+            a.grid(row=currentrow,column=0)
+            b.grid(row=currentrow,column=1)
+            currentrow +=1
+        self.quitButton=ttk.Button(self.frame, text="Quit",command=self.destroy)
         self.quitButton.grid()
 
 root=Tk()
