@@ -8,22 +8,22 @@ from tkinter import *
 from tkinter import ttk
 
 
-class TreeFrame(ttk.Frame):
-    def __init__(self,myparent,*datafield):
-        ttk.Frame.__init__(self,master=None)
+class TreeFrame(Tk):
+    def __init__(self,*datafield):
+        Tk.__init__(self)
         self.grid()
         self.treetitle=["level"]+list(datafield)
-        self.createWidgets(myparent)
+        self.createWidgets()
 
-    def createWidgets(self,myparent):
-        self.frame_tree=ttk.Frame(myparent)
-        self.frame_button=ttk.Frame(myparent)
+    def createWidgets(self):
+        self.frame_tree=ttk.Frame(self)
+        self.frame_button=ttk.Frame(self)
         self.frame_tree.grid(row=0,column=1)
-        self.frame_button.grid(row=0,column=2)
+        self.frame_button.grid(row=1,column=1)
 
         self.tree=ttk.Treeview(self.frame_tree)
         self.button_add=ttk.Button(self.frame_button,text="Add",command=self.addItem)
-        self.button_del=ttk.Button(self.frame_button,text="Delte")
+        self.button_del=ttk.Button(self.frame_button,text="Delete")
 
         self.tree.grid()
         self.button_add.grid()
@@ -36,21 +36,18 @@ class TreeFrame(ttk.Frame):
 
 
     def addItem(self):
-        self.button_add.configure(state=DISABLED)
-        self.inputframe=InputDataFrame(*self.treetitle)
-        self.inputframe.grid()
-        self.button_add.configure(state=NORMAL)
+        self.inputframe=InputDataDialog(self,*self.treetitle)
 
         # self.tree.insert('','end',text="test")
 
-class InputDataFrame(Tk):
-    def __init__(self,*datatitle):
-        Tk.__init__(self)
+class InputDataDialog(Toplevel):
+    def __init__(self,parent,*datatitle):
+        Toplevel.__init__(self,parent)
         self.title("Input Data:")
+        self.grab_set()
         self.frame=ttk.Frame(self)
         self.frame.grid()
         self.createWidgets(*list(datatitle))
-        #self.mainloop()
 
     def createWidgets(self,*datatitle):
         self.entrylist=[]
@@ -65,11 +62,12 @@ class InputDataFrame(Tk):
         self.quitButton=ttk.Button(self.frame, text="Quit",command=self.destroy)
         self.quitButton.grid()
 
-root=Tk()
-root.title("TreeFrame")
-a=["Part","Number","qty"]
 
-myFrame=TreeFrame(root,*a)
 
-root.mainloop()
+a=["Part","description","Number","qty","sequence","status"]
+#a=["sequence","*agrv","**kw"]
+
+mainapp=TreeFrame(*a)
+mainapp.title("Treeview window")
+mainapp.mainloop()
 
