@@ -55,8 +55,7 @@ class TreeFrame(Tk):
         print(datas)
 
     def createButtons(self,parentframe):
-        buttonnamelist=["Add After","Add Into","Delete","Copy","Cut","Paste",\
-                         "Import","Export"]
+        buttonnamelist=["Add After","Add Into","Modify","Move to","Delete","Copy","Cut","Paste", "Import","Export"]
         buttonlist=[]
         for i in range(len(buttonnamelist)):
             tempbutton=ttk.Button(parentframe,text=buttonnamelist[i])
@@ -66,6 +65,7 @@ class TreeFrame(Tk):
 
         self.buttons["Add After"].config(command=self.addItemAfter)
         self.buttons["Add Into"].config(command=self.addItemInto)
+        self.buttons["Export"].config(command=self.exportTree)
         pass    #bind others command in buttons
 
 
@@ -89,6 +89,15 @@ class TreeFrame(Tk):
 
         self.tree.insert(self.currentitem,'end',text=mydata[0],values=mydata)
 
+    def exportTree(self):
+        self.currentitem=self.tree.focus()
+        self.showme()
+
+    def showme(self):
+        code=input("What you want to show? ")
+        eval("print(self.tree."+code+")")
+
+
 class InputDataDialog(Toplevel):
     data=[]   #exchange data with others modules
     def __init__(self,parent,*datatitle):
@@ -109,6 +118,7 @@ class InputDataDialog(Toplevel):
             a.grid(row=currentrow,column=0)
             b.grid(row=currentrow,column=1)
             currentrow +=1
+        self.entrylist[0].focus_force()
         self.okButton=ttk.Button(self.frame, text="Ok",command=self.getdata)
         self.okButton.grid()
 
