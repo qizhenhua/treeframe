@@ -7,13 +7,13 @@ It written by QiZhenHua in 20190316
 from tkinter import *
 from tkinter import ttk
 
-
 class TreeFrame(Tk):
     def __init__(self,*datafield):
         Tk.__init__(self)
         self.datatitle=list(datafield)
         self.treetitle=["level"]+list(datafield)
         self.currentitem=''
+        self.itemtreelist=[]
         self.frame_tree=ttk.Frame(self,width=500,height=300)
         #self.frame_tree.grid_propagate(0) # make width and height effect
         self.tree=ttk.Treeview(self.frame_tree,height=20)
@@ -55,7 +55,7 @@ class TreeFrame(Tk):
         print(datas)
 
     def createButtons(self,parentframe):
-        buttonnamelist=["Add After","Add Into","Modify","Move to","Delete","Copy","Cut","Paste", "Import","Export"]
+        buttonnamelist=["Add After","Add Into","Modify","Move to","Delete","Copy","Cut","Paste", "Import","Export","Info"]
         buttonlist=[]
         for i in range(len(buttonnamelist)):
             tempbutton=ttk.Button(parentframe,text=buttonnamelist[i])
@@ -66,8 +66,9 @@ class TreeFrame(Tk):
         self.buttons["Add After"].config(command=self.addItemAfter)
         self.buttons["Add Into"].config(command=self.addItemInto)
         self.buttons["Export"].config(command=self.exportTree)
+        self.buttons["Import"].config(command=self.importTree)
         pass    #bind others command in buttons
-
+        self.buttons["Info"].config(command=self.getTreeinfo)
 
     def addItemAfter(self):
         self.currentitem=self.tree.focus()
@@ -90,12 +91,34 @@ class TreeFrame(Tk):
         self.tree.insert(self.currentitem,'end',text=mydata[0],values=mydata)
 
     def exportTree(self):
+        self.treeitemlist=[]
+        self.getTreeitems('')
+        myfile=open('test.txt',"w")
+        for i in self.treeitemlist:
+            myfile.writelines(str(i)+'\n')
+        myfile.close()
+        
+    def getTreeitems(self,iid):
+        for i in self.tree.get_children(iid):
+            print(i)
+            a=self.tree.item(i,"values")
+            self.treeitemlist.append(a)
+            if self.tree.get_children(i):
+                self.getTreeitems(i)
+                
+    def importTree(self):
+        treeitemlist=[]
+        myfile=open('test.txt','r')
+        for line in myfile:
+            treeitemlist.append(line)
+        myfile.close()
+        print(treeitemlist)
+        
+    #This function is for debug.
+    def getTreeinfo(self):
         self.currentitem=self.tree.focus()
-        self.showme()
-
-    def showme(self):
         code=input("What you want to show? ")
-        eval("print(self.tree."+code+")")
+        eval("print(self."+code+")")
 
 
 class InputDataDialog(Toplevel):
