@@ -12,25 +12,10 @@ class Treewithlevel(ttk.Treeview):
     This module use level (an int) to set relationship of items, level will
     store to values[0], the set will make the data can readed by human.
     """
-    def __init__(self):
-        ttk.Treeview.__init__(self)
+    def __init__(self,master=None):
+        ttk.Treeview.__init__(self,master)
         self.treeitemlist=[]
-
-    def whoisparent(self,previid=None,mylevel=None):
-        """
-        This function will find the current items parent
-        """
-        if self.parent(previid)=='':    #top level is zero
-            prevlevel=0
-        else:   #not zero
-            prevlevel=int(self.item(previid,option='values')[0])
-        if mylevel==prevlevel:  #same level
-            return self.parent(previid)
-        elif mylevel > prevlevel:   #child
-            return previid
-        else:   #level is same as father or top
-            return self.whoisparent(self.parent(previid),mylevel)
-    
+   
     def exportTreetofile(self,filename):
         self.treeitemlist=[]
         self.getTreeitems('',0)
@@ -41,9 +26,7 @@ class Treewithlevel(ttk.Treeview):
  
     def getTreeitems(self,iid,level):
         for i in self.get_children(iid):
-            print(i)
             a=self.item(i,"values")
-            print(a)
             a=(level+1,)+a
             self.treeitemlist.append(a)
             if self.get_children(i):
@@ -56,19 +39,39 @@ class Treewithlevel(ttk.Treeview):
         myfile.close()
         for i in a:
             treeitemlist.append(list(eval(i)))
-        print(treeitemlist)
         return treeitemlist
+
+    def writeItemlisttotree(self,treeitemlist):
+        previousiid=''
+        previouselevel=''
+        for i in treeitemlist:
+            if i[0]==1:
+                previousiid=self.insert('','end',text=i[1],values=i[1:])
+                previouslevel=i[0]
+            else:
+                parent=self.whoisparent(previousiid,previouslevel,i[0])
+                previousiid=self.insert(parent,'end',text=i[1],values=i[1:])
+                previouslevel=i[0]
+
+    def whoisparent(self,previid=None,prevlevel=None,mylevel=None):
+        #This function will find the current items parent
+        if mylevel==prevlevel:  #same level
+            return self.parent(previid)
+        elif mylevel > prevlevel:   #child
+            return previid
+        else:   #level is same as father or top
+            return self.whoisparent(self.parent(previid),prevlevel-1,mylevel)
  
 class TreeFrame(Tk):
     def __init__(self,*datafield):
         Tk.__init__(self)
         self.datatitle=list(datafield)
-        self.treetitle=["level"]+list(datafield)
+        #self.treetitle=["level"]+list(datafield)
         self.currentitem=''
-        self.itemtreelist=[]
+        self.treeitemlist=[]
         self.frame_tree=ttk.Frame(self,width=500,height=300)
         #self.frame_tree.grid_propagate(0) # make width and height effect
-        self.tree=Treewithlevel()
+        self.tree=Treewithlevel(self.frame_tree)
         self.frame_info=ttk.Frame(self,width=400,height=200)
         self.frame_button=ttk.Frame(self)
 
@@ -88,7 +91,7 @@ class TreeFrame(Tk):
         self.showdata(self.frame_info)
 
     def createTree(self):
-
+        self.tree.configure(height=20)
         self.tree.configure(columns=self.datatitle)
         self.tree.column('#0',width=150)
         for i in self.datatitle:
@@ -144,37 +147,17 @@ class TreeFrame(Tk):
 
     def exportTree(self):
         self.tree.exportTreetofile("test.txt")
-        #self.treeitemlist=[]
-        #self.getTreeitems('')
-        #myfile=open('test.txt',"w")
-        #for i in self.treeitemlist:
-        #    myfile.writelines(str(i)+'\n')
-        #myfile.close()
-        
-    #def getTreeitems(self,iid):
-        #for i in self.tree.get_children(iid):
-            #print(i)
-            #a=self.tree.item(i,"values")
-            #self.treeitemlist.append(a)
-            #if self.tree.get_children(i):
-                #self.getTreeitems(i)
                 
     def importTree(self):
-        self.tree.importTreefromfile("test.txt")
-        #treeitemlist=[]
-        #myfile=open('test.txt','r')
-        #a=myfile.readlines()
-        #myfile.close()
-        #for i in a:
-            #treeitemlist.append(list(eval(i)))
-        #print(treeitemlist)
+        treeitemlist=self.tree.importTreefromfile("test.txt")
+        self.tree.writeItemlisttotree(treeitemlist)
+
         
-    #This function is for debug.
     def getTreeinfo(self):
+        #This function is for debug.
         self.currentitem=self.tree.focus()
         code=input("What you want to show? ")
         eval("print(self."+code+")")
-
 
 class InputDataDialog(Toplevel):
     data=[]   #exchange data with others modules
@@ -206,9 +189,7 @@ class InputDataDialog(Toplevel):
             self.data.append(i.get())
         self.destroy()
 
-
-
-a=["Part","description","Number","qty","sequence","status"]
+a=["Part","description","qty","sequence","status"]
 #a=["sequence","*agrv","**kw"]
 
 mainapp=TreeFrame(*a)
