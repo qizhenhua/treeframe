@@ -7,6 +7,58 @@ It written by QiZhenHua in 20190316
 from tkinter import *
 from tkinter import ttk
 
+class Treewithlevel(ttk.Treeview):
+    """
+    This module use level (an int) to set relationship of items, level will
+    store to values[0], the set will make the data can readed by human.
+    """
+    def __init__(self):
+        ttk.Treeview.__init__(self)
+        self.treeitemlist=[]
+
+    def whoisparent(self,previid=None,mylevel=None):
+        """
+        This function will find the current items parent
+        """
+        if self.parent(previid)=='':    #top level is zero
+            prevlevel=0
+        else:   #not zero
+            prevlevel=int(self.item(previid,option='values')[0])
+        if mylevel==prevlevel:  #same level
+            return self.parent(previid)
+        elif mylevel > prevlevel:   #child
+            return previid
+        else:   #level is same as father or top
+            return self.whoisparent(self.parent(previid),mylevel)
+    
+    def exportTreetofile(self,filename):
+        self.treeitemlist=[]
+        self.getTreeitems('',0)
+        myfile=open(filename,"w")
+        for i in self.treeitemlist:
+            myfile.writelines(str(i)+'\n')
+        myfile.close()
+ 
+    def getTreeitems(self,iid,level):
+        for i in self.get_children(iid):
+            print(i)
+            a=self.item(i,"values")
+            print(a)
+            a=(level+1,)+a
+            self.treeitemlist.append(a)
+            if self.get_children(i):
+                self.getTreeitems(i,level+1)
+
+    def importTreefromfile(self,filename):
+        treeitemlist=[]
+        myfile=open(filename,'r')
+        a=myfile.readlines()
+        myfile.close()
+        for i in a:
+            treeitemlist.append(list(eval(i)))
+        print(treeitemlist)
+        return treeitemlist
+ 
 class TreeFrame(Tk):
     def __init__(self,*datafield):
         Tk.__init__(self)
@@ -16,7 +68,7 @@ class TreeFrame(Tk):
         self.itemtreelist=[]
         self.frame_tree=ttk.Frame(self,width=500,height=300)
         #self.frame_tree.grid_propagate(0) # make width and height effect
-        self.tree=ttk.Treeview(self.frame_tree,height=20)
+        self.tree=Treewithlevel()
         self.frame_info=ttk.Frame(self,width=400,height=200)
         self.frame_button=ttk.Frame(self)
 
@@ -91,28 +143,31 @@ class TreeFrame(Tk):
         self.tree.insert(self.currentitem,'end',text=mydata[0],values=mydata)
 
     def exportTree(self):
-        self.treeitemlist=[]
-        self.getTreeitems('')
-        myfile=open('test.txt',"w")
-        for i in self.treeitemlist:
-            myfile.writelines(str(i)+'\n')
-        myfile.close()
+        self.tree.exportTreetofile("test.txt")
+        #self.treeitemlist=[]
+        #self.getTreeitems('')
+        #myfile=open('test.txt',"w")
+        #for i in self.treeitemlist:
+        #    myfile.writelines(str(i)+'\n')
+        #myfile.close()
         
-    def getTreeitems(self,iid):
-        for i in self.tree.get_children(iid):
-            print(i)
-            a=self.tree.item(i,"values")
-            self.treeitemlist.append(a)
-            if self.tree.get_children(i):
-                self.getTreeitems(i)
+    #def getTreeitems(self,iid):
+        #for i in self.tree.get_children(iid):
+            #print(i)
+            #a=self.tree.item(i,"values")
+            #self.treeitemlist.append(a)
+            #if self.tree.get_children(i):
+                #self.getTreeitems(i)
                 
     def importTree(self):
-        treeitemlist=[]
-        myfile=open('test.txt','r')
-        for line in myfile:
-            treeitemlist.append(line)
-        myfile.close()
-        print(treeitemlist)
+        self.tree.importTreefromfile("test.txt")
+        #treeitemlist=[]
+        #myfile=open('test.txt','r')
+        #a=myfile.readlines()
+        #myfile.close()
+        #for i in a:
+            #treeitemlist.append(list(eval(i)))
+        #print(treeitemlist)
         
     #This function is for debug.
     def getTreeinfo(self):
