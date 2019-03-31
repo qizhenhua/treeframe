@@ -15,16 +15,21 @@ class Treewithlevel(ttk.Treeview):
     def __init__(self,master=None):
         ttk.Treeview.__init__(self,master)
         self.treeitemlist=[]
+
+    def deleteAllitems(self):
+        for i in self.get_children(''):
+            self.delete(i)
    
     def exportTreetofile(self,filename):
         self.treeitemlist=[]
-        self.getTreeitems('',0)
+        self.getTreeitems('',0) #get the whole tree's items
         myfile=open(filename,"w")
         for i in self.treeitemlist:
             myfile.writelines(str(i)+'\n')
         myfile.close()
  
     def getTreeitems(self,iid,level):
+        #get children items and put it in treeitemlist
         for i in self.get_children(iid):
             a=self.item(i,"values")
             a=(level+1,)+a
@@ -79,7 +84,6 @@ class TreeFrame(Tk):
         self.createFrames()
 
     def createFrames(self):
-
         self.tree.grid()    #tree must put in a frame, otherwise it can't adjust dimension
         self.frame_info.grid_propagate(0)
         self.frame_tree.grid(row=0,column=0)
@@ -107,7 +111,6 @@ class TreeFrame(Tk):
             tempinfo.grid(row=i,column=1)
             datalist.append(tempinfo)
         datas=dict(zip(self.datatitle,datalist))
-        print(datas)
 
     def createButtons(self,parentframe):
         buttonnamelist=["Add After","Add Into","Modify","Move to","Delete","Copy","Cut","Paste", "Import","Export","Info"]
@@ -146,12 +149,16 @@ class TreeFrame(Tk):
         self.tree.insert(self.currentitem,'end',text=mydata[0],values=mydata)
 
     def exportTree(self):
-        self.tree.exportTreetofile("test.txt")
+        filename=input("File name?: ")
+        if filename:
+            self.tree.exportTreetofile(filename)
                 
     def importTree(self):
-        treeitemlist=self.tree.importTreefromfile("test.txt")
-        self.tree.writeItemlisttotree(treeitemlist)
-
+        filename=input("Which file?: ")
+        if filename:
+            self.tree.deleteAllitems()
+            treeitemlist=self.tree.importTreefromfile(filename)
+            self.tree.writeItemlisttotree(treeitemlist)
         
     def getTreeinfo(self):
         #This function is for debug.
