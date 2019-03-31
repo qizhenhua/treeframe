@@ -123,6 +123,8 @@ class TreeFrame(Tk):
 
         self.buttons["Add After"].config(command=self.addItemAfter)
         self.buttons["Add Into"].config(command=self.addItemInto)
+        self.buttons["Modify"].config(command=self.modifyItem)
+        self.buttons["Delete"].config(command=self.deleteItem)
         self.buttons["Export"].config(command=self.exportTree)
         self.buttons["Import"].config(command=self.importTree)
         pass    #bind others command in buttons
@@ -130,7 +132,7 @@ class TreeFrame(Tk):
 
     def addItemAfter(self):
         self.currentitem=self.tree.focus()
-        self.inputframe=InputDataDialog(self,*self.datatitle)
+        self.inputframe=InputDataDialog(self,self.datatitle,'')
         self.inputframe.wait_window()
         mydata=self.inputframe.data
 
@@ -142,11 +144,19 @@ class TreeFrame(Tk):
 
     def addItemInto(self):
         self.currentitem=self.tree.focus()
-        self.inputframe=InputDataDialog(self,*self.datatitle)
+        self.inputframe=InputDataDialog(self,self.datatitle,'')
         self.inputframe.wait_window()
         mydata=self.inputframe.data
 
         self.tree.insert(self.currentitem,'end',text=mydata[0],values=mydata)
+
+    def modifyItem(self):
+        myitem=self.tree.focus()
+        pass
+
+    def deleteItem(self):
+        myitem=self.tree.focus()
+        self.tree.delete(myitem)
 
     def exportTree(self):
         filename=input("File name?: ")
@@ -168,15 +178,15 @@ class TreeFrame(Tk):
 
 class InputDataDialog(Toplevel):
     data=[]   #exchange data with others modules
-    def __init__(self,parent,*datatitle):
+    def __init__(self,parent,datatitle,itemdata):
         Toplevel.__init__(self,parent)
         self.title("Input Data:")
         self.grab_set()     # make the main window unvaliable
         self.frame=ttk.Frame(self)
         self.frame.grid()
-        self.createWidgets(*list(datatitle))
+        self.createWidgets(datatitle,itemdata)
 
-    def createWidgets(self,*datatitle):
+    def createWidgets(self,datatitle,itemdata):
         self.entrylist=[]
         currentrow=0
         for i in datatitle:
@@ -186,11 +196,17 @@ class InputDataDialog(Toplevel):
             a.grid(row=currentrow,column=0)
             b.grid(row=currentrow,column=1)
             currentrow +=1
+        if itemdata:
+            self.setData(itemdata)
         self.entrylist[0].focus_force()
-        self.okButton=ttk.Button(self.frame, text="Ok",command=self.getdata)
+        self.okButton=ttk.Button(self.frame, text="Ok",command=self.getData)
         self.okButton.grid()
 
-    def getdata(self):
+    def setData(self,datalist):
+        for i in range(len(self.entrylist)):
+            self.entrylist[i].config(text=datalist[i])
+
+    def getData(self):
         self.data=[]
         for i in self.entrylist:
             self.data.append(i.get())
