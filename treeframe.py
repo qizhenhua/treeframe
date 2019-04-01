@@ -85,6 +85,14 @@ class TreeFrame(Tk):
 
     def createFrames(self):
         self.tree.grid()    #tree must put in a frame, otherwise it can't adjust dimension
+        ysb=ttk.Scrollbar(self.frame_tree,
+                orient='vertical',command=self.tree.yview)
+        xsb=ttk.Scrollbar(self.frame_tree,
+                orient='horizontal',command=self.tree.xview)
+        self.tree.configure(yscroll=ysb.set,xscroll=xsb.set)
+        ysb.grid(row=0,column=1,sticky='ns')
+        xsb.grid(row=1,column=0,sticky='ew')
+       
         self.frame_info.grid_propagate(0)
         self.frame_tree.grid(row=0,column=0)
         self.frame_info.grid(row=0,column=1)
@@ -152,7 +160,11 @@ class TreeFrame(Tk):
 
     def modifyItem(self):
         myitem=self.tree.focus()
-        pass
+        a=list(self.tree.item(myitem,"values"))
+        self.modifyframe=InputDataDialog(self,self.datatitle,a)
+        self.modifyframe.wait_window()
+        mydata=self.modifyframe.data
+        self.tree.item(myitem,text=mydata[0],values=mydata)
 
     def deleteItem(self):
         myitem=self.tree.focus()
@@ -196,6 +208,8 @@ class InputDataDialog(Toplevel):
             a.grid(row=currentrow,column=0)
             b.grid(row=currentrow,column=1)
             currentrow +=1
+        print(self.entrylist)
+        print(itemdata)
         if itemdata:
             self.setData(itemdata)
         self.entrylist[0].focus_force()
@@ -204,7 +218,7 @@ class InputDataDialog(Toplevel):
 
     def setData(self,datalist):
         for i in range(len(self.entrylist)):
-            self.entrylist[i].config(text=datalist[i])
+            self.entrylist[i].insert(0,datalist[i])
 
     def getData(self):
         self.data=[]
